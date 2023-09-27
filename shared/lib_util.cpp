@@ -27,6 +27,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <limits>
 #include <numeric>
 #include <algorithm>
+#include <sstream>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -1227,4 +1228,26 @@ std::vector<double> util::frequency_table(double* values, size_t n_vals, double 
         f /= n_vals;
     }
     return freq;
+}
+
+
+std::string util::trimboth(std::string& buf)
+{
+    const auto strBegin = buf.find_first_not_of(" \t");
+    if (strBegin == std::string::npos)
+        return std::string();
+
+    const auto strEnd = buf.find_last_not_of(" \t\r\n");
+    const auto strRange = strEnd - strBegin + 1;
+    return buf.substr(strBegin, strRange);
+}
+
+std::vector<std::string> util::split(const std::string& buf, char delim)
+{
+    std::string token;
+    std::vector<std::string> tokens;
+    std::istringstream tokenStream(buf);
+    while (std::getline(tokenStream, token, delim))
+        tokens.push_back(token);
+    return tokens;
 }

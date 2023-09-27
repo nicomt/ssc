@@ -164,7 +164,13 @@ endif(MSVC)
 #
 #####################################################################################################################
 
-add_library(ssc SHARED ${SSC_SRC})
+if(EMSCRIPTEN)
+    set(SSC_LIB_TYPE "STATIC")
+else()
+    set(SSC_LIB_TYPE "SHARED")
+endif()
+
+add_library(ssc ${SSC_LIB_TYPE} ${SSC_SRC})
 set_target_properties(ssc
     PROPERTIES
     PREFIX ""

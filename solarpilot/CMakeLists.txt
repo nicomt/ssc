@@ -13,7 +13,7 @@ endif()
 
 #####################################################################################################################
 #
-# Project Settings 
+# Project Settings
 #
 #####################################################################################################################
 
@@ -70,6 +70,8 @@ else()
 	if (APPLE)
 		add_compile_options(-arch x86_64 -fno-common)
   		add_definitions(-DWX_PRECOMP)
+    elseif(EMSCRIPTEN)
+        add_definitions(-D__32BIT__)
 	else()
 		add_definitions(-D__64BIT__)
 	endif()
@@ -84,7 +86,7 @@ endif()
 
 
 #####################################################################################################################
-# 
+#
 # CMake Targets
 #
 #####################################################################################################################
@@ -118,18 +120,18 @@ if (MSVC)
 else()
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:LINUX")
 endif()
-	
+
 if(COPILOT_API)
 	target_link_libraries(solarpilot lpsolve nlopt shared coretrace)
-	if (MSVC)		
+	if (MSVC)
 		set(COPILOT_DLL $<TARGET_FILE_DIR:solarpilot>/$<TARGET_FILE_BASE_NAME:solarpilot>.dll)
 	else()
 		set(COPILOT_DLL $<TARGET_FILE_DIR:solarpilot>/$<TARGET_FILE_BASE_NAME:solarpilot>.so)
 	endif()
-	
+
 
 	if(EXISTS ${CMAKE_SOURCE_DIR}/SolarPILOT/deploy/api)
-		set(DLL_COPY_PATH ${CMAKE_SOURCE_DIR}/SolarPILOT/deploy/api)	
+		set(DLL_COPY_PATH ${CMAKE_SOURCE_DIR}/SolarPILOT/deploy/api)
 	else()
 		set(DLL_COPY_PATH ${CMAKE_SOURCE_DIR})
 	endif()
@@ -140,6 +142,6 @@ if(COPILOT_API)
 		COMMAND ${CMAKE_COMMAND}
 		ARGS -E copy $<TARGET_FILE:solarpilot> ${COPILOT_DLL} ${DLL_COPY_PATH}
 	)
-		
+
 endif()
 

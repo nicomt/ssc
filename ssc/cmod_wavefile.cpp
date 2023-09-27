@@ -1,29 +1,32 @@
 /**
 BSD-3-Clause
 Copyright 2019 Alliance for Sustainable Energy, LLC
-Redistribution and use in source and binary forms, with or without modification, are permitted provided 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided
 that the following conditions are met :
-1.	Redistributions of source code must retain the above copyright notice, this list of conditions 
+1.	Redistributions of source code must retain the above copyright notice, this list of conditions
 and the following disclaimer.
-2.	Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
+2.	Redistributions in binary form must reproduce the above copyright notice, this list of conditions
 and the following disclaimer in the documentation and/or other materials provided with the distribution.
-3.	Neither the name of the copyright holder nor the names of its contributors may be used to endorse 
+3.	Neither the name of the copyright holder nor the names of its contributors may be used to endorse
 or promote products derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-ARE DISCLAIMED.IN NO EVENT SHALL THE COPYRIGHT HOLDER, CONTRIBUTORS, UNITED STATES GOVERNMENT OR UNITED STATES 
-DEPARTMENT OF ENERGY, NOR ANY OF THEIR EMPLOYEES, BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, 
-OR CONSEQUENTIAL DAMAGES(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
-WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.IN NO EVENT SHALL THE COPYRIGHT HOLDER, CONTRIBUTORS, UNITED STATES GOVERNMENT OR UNITED STATES
+DEPARTMENT OF ENERGY, NOR ANY OF THEIR EMPLOYEES, BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <string>
 #include <fstream>
 #include "core.h"
 #include "lib_util.h"
-#include "lib_weatherfile.cpp"
+#include "lib_weatherfile.h"
+
+using util::trimboth;
+using util::split;
 
 static var_info _cm_wave_file_reader[] = {
 /*   VARTYPE           DATATYPE         NAME                           LABEL                                        UNITS     META                      GROUP                 REQUIRED_IF                CONSTRAINTS        UI_HINTS*/
@@ -32,7 +35,7 @@ static var_info _cm_wave_file_reader[] = {
     { SSC_INPUT,         SSC_STRING,      "wave_resource_filename_ts",               "File path with 3-hour Wave Height and Period data as Time Series array",                     "",       "",                      "Weather Reader",      "wave_resource_model_choice=1",                       "LOCAL_FILE",      "" },
 
     { SSC_INPUT,         SSC_NUMBER,      "use_specific_wf_wave",               "user specified file",                     "0/1",       "",                      "Weather Reader",      "?=0",                       "INTEGER,MIN=0,MAX=1",      "" },
-	
+
 // header data
 	{ SSC_OUTPUT,        SSC_STRING,      "name",                    "Name",                                        "",       "",                      "Weather Reader",      "use_specific_wf_wave=0&wave_resource_model_choice=0",                        "",               "" },
 	{ SSC_OUTPUT,        SSC_STRING,      "city",                    "City",                                        "",       "",                      "Weather Reader",      "use_specific_wf_wave=0&wave_resource_model_choice=0",                        "",               "" },
@@ -52,14 +55,14 @@ static var_info _cm_wave_file_reader[] = {
     { SSC_OUTPUT,        SSC_NUMBER,      "water_depth_file",             "Water depth",               "m",       "",                      "Weather Reader",     "use_specific_wf_wave=0&wave_resource_model_choice=1",                        "",               "" },
 
     //timestamps
-    
+
     { SSC_OUTPUT,        SSC_ARRAY,       "year",                    "Year",                             "yr",     "",                      "Weather Reader",      "wave_resource_model_choice=1",                       "",               "" },
     { SSC_OUTPUT,        SSC_ARRAY,       "month",                   "Month",                            "mn",     "1-12",                  "Weather Reader",      "wave_resource_model_choice=1",                       "",                          "" },
     { SSC_OUTPUT,        SSC_ARRAY,       "day",                     "Day",                              "dy",     "1-365",                 "Weather Reader",      "wave_resource_model_choice=1",                       "",                          "" },
     { SSC_OUTPUT,        SSC_ARRAY,       "hour",                    "Hour",                             "hr",     "0-23",                  "Weather Reader",      "wave_resource_model_choice=1",                       "",                          "" },
     { SSC_OUTPUT,        SSC_ARRAY,       "minute",                  "Minute",                           "min",    "0-59",                  "Weather Reader",      "wave_resource_model_choice=1",                       "",                          "" },
-    
-// weather data records																					            
+
+// weather data records
 	{ SSC_OUTPUT,        SSC_MATRIX,      "wave_resource_matrix",              "Frequency distribution of resource",                                  "m/s",   "",                       "Weather Reader",      "*",                        "",                            "" },
    // { SSC_OUTPUT,        SSC_ARRAY,       "time_check",                        "Time check",                                                          "",      "",                       "Weather Reader",      "?",                        "",                            "" },
    // { SSC_OUTPUT,        SSC_ARRAY,       "month",                        "Month",                                                          "",      "",                       "Weather Reader",      "?",                        "",                            "" },
@@ -80,10 +83,10 @@ public:
 	{
 		add_var_info(_cm_wave_file_reader);
 	}
-	
+
     void exec()
     {
-      
+
         std::string file;
         if (is_assigned("wave_resource_filename") && as_integer("wave_resource_model_choice")==0)
         {
@@ -125,7 +128,7 @@ public:
             values = split(buf1);
             int ncols = (int)keys.size();
             int ncols1 = (int)values.size();
-            //Do we need to require all 
+            //Do we need to require all
             if (ncols != ncols1 || ncols < 13)
             {
                 throw exec_error("wave_file_reader", "Number of header column labels does not match number of values. There are " + std::to_string(ncols) + "keys and " + std::to_string(ncols1) + "values.");
@@ -179,7 +182,7 @@ public:
 
             }
         }
-        
+
         if (as_integer("wave_resource_model_choice") == 1)
         {
             size_t numberRecords = 0;
@@ -218,7 +221,7 @@ public:
                     else if (lowname == "min" || lowname == "minute") minute_index = i;
                     else if (lowname == "wave height" || lowname == "wave heights" || lowname == "heights" || lowname == "height" || lowname == "hs" || lowname == "significant wave height") height_index = i;
                     else if (lowname == "wave period" || lowname == "wave periods" || lowname == "energy period" || lowname == "energy periods" || lowname == "tp") period_index = i;
-                    
+
                 }
             }
             if (year_index == -1 || month_index == -1 || day_index == -1 || hour_index == -1 || minute_index == -1 ||
@@ -236,7 +239,7 @@ public:
             ssc_number_t* p_hour = allocate("hour", numberRecords);
             ssc_number_t* p_minute = allocate("minute", numberRecords);
             ssc_number_t* mat = allocate("wave_resource_matrix", nrows, ncols);
-            
+
             for (size_t j = 0; j < 21; j++) {
                 mat[j * ncols] = (0.25 + (j-1) * 0.5);
             }
@@ -252,7 +255,7 @@ public:
                 getline(ifs, buf);
                 values.clear();
                 values = split(buf);
-                
+
                 if (r == 0) {
                     //value_0 = split(buf);
                     hour0 = (ssc_number_t)std::stod(values[hour_index]);
@@ -295,10 +298,10 @@ public:
                 //Add percentage point to resource matrix for matcing wave height and energy period bins
                 double mat_incr = 100 / numberRecords_mat;
                 mat[sig_wave_height_index * ncols + energy_period_index] = mat[sig_wave_height_index * ncols + energy_period_index] + mat_incr; //1/numberRecords * 100 to make a percentage at each time step
-                                
+
             }
             //Set decimals to 2 places in resource matrix for easier reading in output
-            
+
             for (size_t r2 = 0; r2 < 21; r2++) {
                 for (size_t c2 = 0; c2 < 22; c2++) {
                     if (r2 != 0 && c2 != 0) mat[r2 * 22 + c2] = round(mat[r2 * 22 + c2] * 100) / 100;
@@ -328,7 +331,7 @@ public:
                         mat[r * 22 + c] = std::stod(values[c]);
                 }
             }
-            
+
         }
         else {
             throw exec_error("wave_file_reader", "Resource data type needs to be defined ");

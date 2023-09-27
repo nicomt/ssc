@@ -52,26 +52,8 @@ using std::stoi;
 #define my_isnan(x) std::isnan( x )
 #endif
 
-static std::string trimboth(std::string& buf)
-{
-    const auto strBegin = buf.find_first_not_of(" \t");
-    if (strBegin == std::string::npos)
-        return std::string();
-
-    const auto strEnd = buf.find_last_not_of(" \t\r\n");
-    const auto strRange = strEnd - strBegin + 1;
-    return buf.substr(strBegin, strRange);
-}
-
-static std::vector<std::string> split(const std::string& buf, char delim = ',')
-{
-    std::string token;
-    std::vector<std::string> tokens;
-    std::istringstream tokenStream(buf);
-    while (std::getline(tokenStream, token, delim))
-        tokens.push_back(token);
-    return tokens;
-}
+using util::trimboth;
+using util::split;
 
 /*
 static float col_or_zero(const std::string &s)
@@ -1468,7 +1450,7 @@ bool weatherfile::open(const std::string& file, bool header_only)
     // special handling for missing values for various fields
     if (m_type == EPW) {
         if (m_columns[MINUTE].data[0] == 60 && m_columns[MINUTE].data[1] == 60) { //check if 60 is the minutes value for each time step (assuming uniform time stamps
-            m_columns[MINUTE].index = -1; //Reset column index to allow for automatic minute calculation 
+            m_columns[MINUTE].index = -1; //Reset column index to allow for automatic minute calculation
         }
         for (size_t i = 0; i < m_nRecords; i++) {
             for (int j = 5; j < 19; j++) {

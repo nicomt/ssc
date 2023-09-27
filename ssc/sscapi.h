@@ -45,7 +45,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(__WINDOWS__)&&defined(__DLL__)
 #define SSCEXPORT __declspec(dllexport)
 #else
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#define SSCEXPORT EMSCRIPTEN_KEEPALIVE
+#else
 #define SSCEXPORT
+#endif
 #endif
 
 #ifndef __SSCLINKAGECPP__

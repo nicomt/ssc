@@ -808,7 +808,7 @@ void json_to_ssc_var(const rapidjson::Value& json_val, ssc_var_t ssc_val) {
     std::vector<ssc_number_t> vec;
     std::vector<var_data>* vd_arr;
     var_table* vd_tab;
-    
+
     auto is_numerical = [](const rapidjson::Value& json_val) {
         bool is_num = true;
         for (rapidjson::SizeType i = 0; i < json_val.Size(); i++) {
@@ -819,7 +819,7 @@ void json_to_ssc_var(const rapidjson::Value& json_val, ssc_var_t ssc_val) {
         }
         return is_num;
     };
-    
+
     switch (json_val.GetType()) {
     default:
     case rapidjson::Type::kNullType:
@@ -980,7 +980,7 @@ SSCEXPORT const char* ssc_data_to_json(ssc_data_t p_data) {
 
     return strdup(buffer.GetString());
 }
- 
+
 
 
 

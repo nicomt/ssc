@@ -5,11 +5,18 @@
 #####################################################################################################################
 
 if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
-	execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/configure)
+    if(EMSCRIPTEN)
+        execute_process(COMMAND "${EMSCRIPTEN_ROOT_PATH}/emconfigure${EMCC_SUFFIX}" ${CMAKE_CURRENT_SOURCE_DIR}/configure)
+    else()
+        execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/configure)
+    endif()
 	execute_process(COMMAND cp config.h ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 include_directories(.)
+if(NOT EMSCRIPTEN)
+    include_directories(./patch)
+endif()
 
 set(NLOPT_SRC
 	auglag.c
